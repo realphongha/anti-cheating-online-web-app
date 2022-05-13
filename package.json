@@ -9,6 +9,7 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
+    "gh-pages": "^4.0.0",
     "prop-types": "^15.8.1",
     "ra-data-json-server": "^4.0.3",
     "react": "^18.1.0",
@@ -21,7 +22,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -43,5 +46,6 @@
   },
   "devDependencies": {
     "react-router-dom": "^6.3.0"
-  }
+  },
+  "homepage": "https://realphongha.github.io/anti-cheating-online-web-app"
 }
