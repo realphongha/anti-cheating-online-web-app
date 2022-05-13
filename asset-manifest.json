@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/anti-cheating-online-web-app/static/css/main.d98f98d1.css",
+    "main.js": "/anti-cheating-online-web-app/static/js/main.02ada79c.js",
+    "static/js/787.4e343477.chunk.js": "/anti-cheating-online-web-app/static/js/787.4e343477.chunk.js",
+    "index.html": "/anti-cheating-online-web-app/index.html",
+    "main.d98f98d1.css.map": "/anti-cheating-online-web-app/static/css/main.d98f98d1.css.map",
+    "main.02ada79c.js.map": "/anti-cheating-online-web-app/static/js/main.02ada79c.js.map",
+    "787.4e343477.chunk.js.map": "/anti-cheating-online-web-app/static/js/787.4e343477.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d98f98d1.css",
+    "static/js/main.02ada79c.js"
+  ]
+}
