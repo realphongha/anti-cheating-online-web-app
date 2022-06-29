@@ -1,17 +1,19 @@
-import { useState } from "react";
+import { useState, useContext, useEffect, React } from "react";
 import { Admin, Resource, fetchUtils } from "react-admin";
 import simpleRestProvider from 'ra-data-simple-rest';
-import { ClassList } from "../../models/list/ClassList";
-import { ClassCreate } from "../../models/create/ClassCreate";
-import { ClassEdit } from "../../models/edit/ClassEdit";
-import ReactAdminHeaderLayout from "../layouts/ReactAdminHeaderLayout";
-import * as constants from "../../utils/Constants";
+import { UserList } from "../models/list/UserList";
+import { ClassList } from "../models/list/ClassList";
+import { ClassShow } from "../models/show/ClassShow";
+import { UserEdit } from "../models/edit/UserEdit"; 
+import { UserCreate } from "../models/create/UserCreate";
+import ReactAdminHeaderLayout from "./layouts/ReactAdminHeaderLayout";
+import * as constants from "../utils/Constants";
 import vietnameseMessages from 'ra-language-vietnamese';
 import polyglotI18nProvider from 'ra-i18n-polyglot';
 
 const i18nProvider = polyglotI18nProvider(() => vietnameseMessages, 'vi');
 
-const ClassesSupervisor = () => {
+const AdminManagement = () => {
 
   const httpClient = (url, options = {}) => {
     if (!options.headers) {
@@ -26,18 +28,23 @@ const ClassesSupervisor = () => {
 
   return (
     <Admin 
-      basename="/supervisor/classes" 
-      dataProvider={dataProvider}
+      basename="/admin" 
+      dataProvider={dataProvider} 
       i18nProvider={i18nProvider}
       layout={ReactAdminHeaderLayout}>
+      <Resource 
+        options={{ label: 'Tài khoản' }}
+        name={constants.DB_USERS_COLLECTION} 
+        list={UserList}
+        edit={UserEdit} 
+        create={UserCreate} />
       <Resource 
         options={{ label: 'Lớp thi' }}
         name={constants.DB_CLASSES_COLLECTION} 
         list={ClassList}
-        create={ClassCreate}
-        edit={ClassEdit} />
+        show={<ClassShow admin/>} />
     </Admin>
   )
 }
 
-export default ClassesSupervisor;
+export default AdminManagement;
