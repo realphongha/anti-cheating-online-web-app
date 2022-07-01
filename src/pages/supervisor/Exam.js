@@ -168,7 +168,7 @@ const StudentCheatingPopup = (props) => {
         localStorage.getItem("token"), cheating.id, props.classId
       );
       message.info("Xóa gian lận thành công!", 4000);
-      let newCheatings = props.cheatings;
+      let newCheatings = _.cloneDeep(props.cheatings);
       let newCheating = props.cheatings[props.studentId];
       newCheating.splice(i, 1);
       newCheatings[props.studentId] = newCheating;
