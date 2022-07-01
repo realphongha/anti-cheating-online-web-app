@@ -823,17 +823,17 @@ const Exam = (props) => {
       cheating.student = {id: cheating.student_id}
     }
     console.log("cheating:", cheating, image);
-    if (image.slice(0, 10) === "data:image") {
+    if (image && image.slice(0, 10) === "data:image") {
       image = image.split(",")[1]
     }
     let newCheatings = _.cloneDeep(cheatings);
     await db.current.cheatingImages.add({
       id: cheating.id,
       student_id: studentId,
-      image: {
+      image: image ? {
         base64: image,
         subType: "00"
-      },
+      } : null,
       class_id: classId
     }).catch(err => console.log(err));
     delete cheating.image;
