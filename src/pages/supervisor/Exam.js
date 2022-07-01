@@ -900,7 +900,8 @@ const Exam = (props) => {
       message.info("Lưu cấu hình giám sát thành công!", 4000);
     } catch (err) {
       console.log(err);
-      if (err.response && (err.response.status === 400)) {
+      if (err.response && (err.response.status === 400 || 
+                           err.response.status === 403)) {
         message.error(err.response.data.message, 4000);
         console.log(err.response.data.message);
       } else {
@@ -923,6 +924,10 @@ const Exam = (props) => {
     let newNotis = notis;
     newNotis.splice(i, 1);
     setNotis(newNotis);
+  }
+
+  const removeAllNotis = () => {
+    setNotis([]);
   }
 
   const onDeleteStudent = async (studentId) => {
@@ -1106,6 +1111,11 @@ const Exam = (props) => {
                   if (notiPage < Math.ceil(notis.length / notisPerPage)) setNotiPage(notiPage + 1);
                 }}
                 color={(notiPage < Math.ceil(notis.length / notisPerPage)) ? constants.black : constants.gray} />
+            </div>
+            <div style={{ flex: 1, justifyContent: "flex-end" }}>
+              <input className="inputBtn" type="button" 
+                value="Xóa tất cả thông báo"
+                onClick={() => removeAllNotis()} />
             </div>
           </div>
         }
