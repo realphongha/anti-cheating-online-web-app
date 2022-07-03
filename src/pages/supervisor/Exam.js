@@ -358,12 +358,12 @@ const ImagesPopup = (props) => {
 
   useEffect(() => {
     getCountImages();
-  }, [props.studentMaps]);
+  }, [props.regularImages]);
 
   useEffect(() => {
     if (!countAll || !currentPage) return;
     getImages();
-  }, [countAll, currentPage, props.studentMaps]);
+  }, [countAll, currentPage, props.regularImages]);
 
   const getCountImages = async () => {
     if (props.studentId) {
@@ -391,11 +391,13 @@ const ImagesPopup = (props) => {
         })
         .sortBy("time", (arr) => {
           for (let i = offset; i < offset+limit; i++){
-            newImages.push({
+            if (arr[i]) {
+              newImages.push({
               original: "data:image/jpeg;base64," + arr[i].image,
               thumbnail: "data:image/jpeg;base64," + arr[i].image,
               id: arr[i].id
             });
+            }
           }
         });
       setImages(newImages);
@@ -481,7 +483,7 @@ const ImagesPopup = (props) => {
                 if (saving) {
                   let i = galleryRef.current.getCurrentIndex();
                   onSaveCheating(images[i].original)
-                } else {
+                } else if (images.length > 0) {
                   setSaving(true);
                 }
               }}
@@ -589,6 +591,7 @@ const Exam = (props) => {
   const [trackLaptop, setTrackLaptop] = useState(true);
   const [students, setStudents] = useState([]);
   const [studentMaps, setStudentMaps] = useState({});
+  const [regularImages, setRegularImages] = useState({});
   const requestEndStatus = useRef({});
   const [cheatings, setCheatings] = useState({});
   const [notis, setNotis] = useState([]);
@@ -660,17 +663,19 @@ const Exam = (props) => {
       console.log(data);
       imgb64toDB(data.image, data.uuid, data.student_id,
         db.current.regularImages);
-      let newStudentMaps = _.cloneDeep(studentMaps);
-      if (data.student_id in newStudentMaps ) {
-        console.log(newStudentMaps);
+      if (data.student_id in regularImages) {
         pushToPicsQueue(
-          newStudentMaps[data.student_id]["pictures"], {
+          regularImages[data.student_id], {
           studentId: data.student_id,
           image_id: data.uuid,
           note: "",
           time: new Date()
         });
-        setStudentMaps(newStudentMaps);
+        let listPics = regularImages[data.student_id];
+        regularImages[data.student_id] = [...listPics.slice(
+            listPics.length-constants.MAX_SUPERVISING_IMAGES>0?listPics.length-constants.MAX_SUPERVISING_IMAGES:0, listPics.length
+          )]
+        setRegularImages(_.cloneDeep(regularImages));
       }
     });
 
@@ -754,13 +759,15 @@ const Exam = (props) => {
         }
         let newStudents = class_.students;
         let newStudentMaps = {};
+        let newRegularImages = {};
         for (let i = 0; i < newStudents.length; i++) {
-          newStudents[i]["pictures"] = [];
+          newRegularImages[newStudents[i].id] = []
           requestEndStatus.current[newStudents[i].id] = constants.NOT_REQUESTED_STATUS;
           newStudentMaps[newStudents[i].id] = newStudents[i];
         }
         setStudents(newStudents);
         setStudentMaps(newStudentMaps);
+        setRegularImages(newRegularImages);
         let cheatings_ = class_.cheatings;
         let newCheatings = {};
         for (let i = 0; i < cheatings_.length; i++) {
@@ -862,9 +869,9 @@ const Exam = (props) => {
     listPics.push(newPic);
     if (listPics.length > constants.MAX_SUPERVISING_IMAGES) {
       for (let i = 0; i < listPics.length - constants.MAX_SUPERVISING_IMAGES; i++) {
+        console.log("deleted", listPics[i]);
         await db.current.regularImages.delete(listPics[i].image_id);
       }
-      listPics.splice(0, listPics.length-constants.MAX_SUPERVISING_IMAGES);
     }
   }
 
@@ -877,7 +884,7 @@ const Exam = (props) => {
       for (let id in studentMaps) {
         let s = studentMaps[id];
         if (requestEndStatus.current[id] === constants.ENDED_STATUS) continue;
-        lastTime = s.pictures[s.pictures.length-1]; 
+        lastTime = regularImages[s.id][regularImages[s.id].length-1];
         if (!(lastTime && (new Date() - lastTime.time) < constants.PATIENCE_SUPERVISING_IMAGES )) {
           newNotis.push({
             type: "cheating",
@@ -1019,7 +1026,7 @@ const Exam = (props) => {
                   classId={classId}
                   addCheating={addCheating}
                   db={db}
-                  studentMaps={studentMaps} />
+                  regularImages={regularImages} />
               </p>
               <FontAwesomeIcon icon={faXmark} className="clickable"
                 color={constants.red}
