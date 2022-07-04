@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleRight, faAngleLeft, faCamera, faCheck, faXmark, faEye }
+import { faAngleRight, faAngleLeft, faCamera, faCheck, faXmark, faEye, faUser }
   from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useNavigate } from "react-router-dom";
 import { toDDMMYYHHSS, msecToHHMMSS } from "../../utils/DateTime";
@@ -286,9 +286,8 @@ const SusImagePopup = (props) => {
   }
 
   const onRemoveNoti = () => {
-    let newNotis = props.notis;
-    newNotis.splice(props.i, 1);
-    props.setNotis(newNotis);
+    props.notis.splice(props.i, 1);
+    props.setNotis(_.cloneDeep(props.notis));
   }
 
   return (
@@ -639,13 +638,11 @@ const Exam = (props) => {
 
     socketio.on("handle_end_request", (data) => {
       if (data.class_id !== classId) return;
-      console.log(data);
-      let newNotis = notis;
       let student = null;
       if (data.student_id in studentMaps) {
         student = studentMaps[data.student_id];
         if (student && requestEndStatus.current[data.student_id] === constants.NOT_REQUESTED_STATUS) {
-          newNotis.push({
+          notis.push({
             type: "endRequest",
             name: student.name,
             studentId: data.student_id,
@@ -653,7 +650,7 @@ const Exam = (props) => {
           });
           requestEndStatus.current[data.student_id] = constants.REQUESTING_STATUS;
         }
-        setNotis(newNotis);
+        setNotis(_.cloneDeep(notis));
       }
     });
 
@@ -685,21 +682,20 @@ const Exam = (props) => {
       console.log(data);
       imgb64toDB(data.image, data.uuid, data.student_id,
         db.current.susImages);
-      let newNotis = notis;
       let student = null;
       if (data.student_id in studentMaps) {
         student = studentMaps[data.student_id];
         console.log(student);
         if (student) {
           console.log(student);
-          newNotis.push({
+          notis.push({
             type: "cheating",
             name: student.name,
             studentId: student.id,
             image_id: data.uuid,
             note: data.note,
           });
-          setNotis(newNotis);
+          setNotis(_.cloneDeep(notis));
         }
       }
     });
@@ -879,14 +875,13 @@ const Exam = (props) => {
   const checkRegularImages = () => {
     if (timeStatus !== "in_progress") return;
     if (studentMaps) {
-      let newNotis = notis;
       let lastTime = null;
       for (let id in studentMaps) {
         let s = studentMaps[id];
         if (requestEndStatus.current[id] === constants.ENDED_STATUS) continue;
         lastTime = regularImages[s.id][regularImages[s.id].length-1];
         if (!(lastTime && (new Date() - lastTime.time) < constants.PATIENCE_SUPERVISING_IMAGES )) {
-          newNotis.push({
+          notis.push({
             type: "cheating",
             name: s.name,
             studentId: s.id,
@@ -895,7 +890,7 @@ const Exam = (props) => {
           });
         }
       }
-      setNotis(newNotis);
+      setNotis(_.cloneDeep(notis));
     }
   }
 
@@ -928,9 +923,8 @@ const Exam = (props) => {
   }
 
   const removeNoti = (i) => {
-    let newNotis = notis;
-    newNotis.splice(i, 1);
-    setNotis(newNotis);
+    notis.splice(i, 1);
+    setNotis(_.cloneDeep(notis));
   }
 
   const removeAllNotis = () => {
@@ -996,7 +990,16 @@ const Exam = (props) => {
         {(focus === "students") && students && cheatings &&
           students.slice((studentPage - 1) * studentsPerPage, studentPage * studentsPerPage).map((student, i) =>
             <div key={i + (studentPage - 1) * studentsPerPage}>
-              <p style={{ flex: 2 }}>{student.name}</p>
+              <div style={{ flex: 2, alignItems: "center" }}>
+                {
+                  student.avatar?
+                  <img className="smallAvatar"
+                      alt="Không có ảnh"
+                      src={"data:image/jpeg;base64," + student.avatar.$binary.base64} />:
+                  <FontAwesomeIcon icon={faUser} />
+                }
+                <p>{student.name}</p>
+              </div>
               {
                 (cheatings[student.id] && cheatings[student.id].length > 0) ?
                   <StudentCheatingPopup
@@ -1007,17 +1010,17 @@ const Exam = (props) => {
                     db={db}
                     triggerElement={
                       <p className="clickable"
-                        style={{ flex: 2, fontWeight: "bold", color: "red" }}>
+                        style={{ flex: 2, fontWeight: "bold", color: "red", alignSelf: "center" }}>
                         Gian lận {cheatings[student.id].length} lần
                       </p>
                     } />
                   :
                   <p className="clickable"
-                    style={{ flex: 2, fontWeight: "bold", color: "green" }}>
+                    style={{ flex: 2, fontWeight: "bold", color: "green", alignSelf: "center" }}>
                     Chưa gian lận
                   </p>
               }
-              <p style={{ fontWeight: "bold", flex: 1 }}>
+              <p style={{ fontWeight: "bold", flex: 1, alignSelf: "center" }}>
                 ẢNH GIÁM SÁT&nbsp;&nbsp;&nbsp;&nbsp;
                 <ImagesPopup triggerElement={
                     <FontAwesomeIcon icon={faCamera} className="clickable" />

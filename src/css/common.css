@@ -406,3 +406,10 @@ button.image-gallery-left-nav {
 button.image-gallery-right-nav {
   display: none;
 }
+
+img.smallAvatar {
+  height: 80px;
+  width: 80px;
+  border-radius: 5px;
+  margin: 5px
+}
