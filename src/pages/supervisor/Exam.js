@@ -286,8 +286,9 @@ const SusImagePopup = (props) => {
   }
 
   const onRemoveNoti = () => {
-    props.notis.splice(props.i, 1);
-    props.setNotis(_.cloneDeep(props.notis));
+    let newNotis = _.cloneDeep(props.notis);
+    newNotis.splice(props.i, 1);
+    props.setNotis(newNotis);
   }
 
   return (
@@ -636,69 +637,11 @@ const Exam = (props) => {
       console.log("disconnected", socketio.id);
     });
 
-    socketio.on("handle_end_request", (data) => {
-      if (data.class_id !== classId) return;
-      let student = null;
-      if (data.student_id in studentMaps) {
-        student = studentMaps[data.student_id];
-        if (student && requestEndStatus.current[data.student_id] === constants.NOT_REQUESTED_STATUS) {
-          notis.push({
-            type: "endRequest",
-            name: student.name,
-            studentId: data.student_id,
-            sid: data.sid
-          });
-          requestEndStatus.current[data.student_id] = constants.REQUESTING_STATUS;
-        }
-        setNotis(_.cloneDeep(notis));
-      }
-    });
+    socketio.on("handle_end_request", handleEndRequestCallback);
 
-    socketio.on("handle_image", (data) => {
-      if (data.class_id !== classId) return;
-      console.log("regular image:");
-      console.log(data);
-      imgb64toDB(data.image, data.uuid, data.student_id,
-        db.current.regularImages);
-      if (data.student_id in regularImages) {
-        pushToPicsQueue(
-          regularImages[data.student_id], {
-          studentId: data.student_id,
-          image_id: data.uuid,
-          note: "",
-          time: new Date()
-        });
-        let listPics = regularImages[data.student_id];
-        regularImages[data.student_id] = [...listPics.slice(
-            listPics.length-constants.MAX_SUPERVISING_IMAGES>0?listPics.length-constants.MAX_SUPERVISING_IMAGES:0, listPics.length
-          )]
-        setRegularImages(_.cloneDeep(regularImages));
-      }
-    });
+    socketio.on("handle_image", handleImageCallback);
 
-    socketio.on("handle_cheating_image", (data) => {
-      if (data.class_id !== classId) return;
-      console.log("cheating image:");
-      console.log(data);
-      imgb64toDB(data.image, data.uuid, data.student_id,
-        db.current.susImages);
-      let student = null;
-      if (data.student_id in studentMaps) {
-        student = studentMaps[data.student_id];
-        console.log(student);
-        if (student) {
-          console.log(student);
-          notis.push({
-            type: "cheating",
-            name: student.name,
-            studentId: student.id,
-            image_id: data.uuid,
-            note: data.note,
-          });
-          setNotis(_.cloneDeep(notis));
-        }
-      }
-    });
+    socketio.on("handle_cheating_image", handleCheatingImageCallback);
 
     socketio.emit("join", {
       class_id: classId ? classId : loc.state.classId,
@@ -712,6 +655,9 @@ const Exam = (props) => {
 
     return () => {
       clearInterval(intervalBroadcastId);
+      socketio.off("handle_end_request", handleEndRequestCallback);
+      socketio.off("handle_image", handleCheatingImageCallback);
+      socketio.off("handle_cheating_image", handleCheatingImageCallback);
     }
   }, [socketio, timeStatus])
 
@@ -738,6 +684,75 @@ const Exam = (props) => {
       navigate("/");
     }
   }, []);
+
+  const handleEndRequestCallback = (data) => {
+    if (data.class_id !== classId) return;
+    let student = null;
+    if (data.student_id in studentMaps) {
+      student = studentMaps[data.student_id];
+      if (student && requestEndStatus.current[data.student_id] === constants.NOT_REQUESTED_STATUS) {
+        setNotis((notis) => {
+          let newNotis = _.cloneDeep(notis);
+          newNotis.push({
+            type: "endRequest",
+            name: student.name,
+            studentId: data.student_id,
+            sid: data.sid
+          });
+          requestEndStatus.current[data.student_id] = constants.REQUESTING_STATUS;
+          return newNotis;
+        });
+      }
+    }
+  };
+
+  const handleCheatingImageCallback = (data) => {
+    if (data.class_id !== classId) return;
+    console.log("cheating image:");
+    console.log(data);
+    imgb64toDB(data.image, data.uuid, data.student_id,
+      db.current.susImages);
+    let student = null;
+    if (data.student_id in studentMaps) {
+      student = studentMaps[data.student_id];
+      console.log(student);
+      if (student) {
+        setNotis((notis) => {
+          let newNotis = _.cloneDeep(notis);
+          newNotis.push({
+            type: "cheating",
+            name: student.name,
+            studentId: student.id,
+            image_id: data.uuid,
+            note: data.note,
+          });
+          return newNotis;
+        });
+      }
+    }
+  };
+
+  const handleImageCallback = (data) => {
+    if (data.class_id !== classId) return;
+    console.log("regular image:");
+    console.log(data);
+    imgb64toDB(data.image, data.uuid, data.student_id,
+      db.current.regularImages);
+    if (data.student_id in regularImages) {
+      pushToPicsQueue(
+        regularImages[data.student_id], {
+        studentId: data.student_id,
+        image_id: data.uuid,
+        note: "",
+        time: new Date()
+      });
+      let listPics = regularImages[data.student_id];
+      regularImages[data.student_id] = [...listPics.slice(
+          listPics.length-constants.MAX_SUPERVISING_IMAGES>0?listPics.length-constants.MAX_SUPERVISING_IMAGES:0, listPics.length
+        )]
+      setRegularImages(_.cloneDeep(regularImages));
+    }
+  };
 
   // getting init exam data
   const getData = async (id) => {
@@ -881,16 +896,17 @@ const Exam = (props) => {
         if (requestEndStatus.current[id] === constants.ENDED_STATUS) continue;
         lastTime = regularImages[s.id][regularImages[s.id].length-1];
         if (!(lastTime && (new Date() - lastTime.time) < constants.PATIENCE_SUPERVISING_IMAGES )) {
-          notis.push({
+          let newNotis = _.cloneDeep(notis);
+          newNotis.push({
             type: "cheating",
             name: s.name,
             studentId: s.id,
             image_id: null,
             note: "Không nhận được ảnh giám sát!",
           });
+          setNotis(newNotis);
         }
       }
-      setNotis(_.cloneDeep(notis));
     }
   }
 
@@ -923,8 +939,9 @@ const Exam = (props) => {
   }
 
   const removeNoti = (i) => {
-    notis.splice(i, 1);
-    setNotis(_.cloneDeep(notis));
+    let newNotis = _.cloneDeep(notis);
+    newNotis.splice(i, 1);
+    setNotis(newNotis);
   }
 
   const removeAllNotis = () => {
