@@ -32,9 +32,9 @@ export const ClassShow = (props) => (
         render={class_ => constants.CLASS_STATUS[class_.status]} />
       {
       props.admin &&
-      <ArrayField 
+      <ArrayField
         label="Học sinh"
-        source="students" 
+        source="students"
         fieldKey="id">
           <Datagrid bulkActionButtons={false}>
             <TextField label="Họ tên" source="name" />
@@ -45,7 +45,7 @@ export const ClassShow = (props) => (
       }
       {
       props.admin &&
-      <ArrayField 
+      <ArrayField
         label="Gian lận"
         source="cheatings"
         fieldKey="id">
@@ -56,11 +56,11 @@ export const ClassShow = (props) => (
             <DateField label="Thời gian" source="time.$date" showTime />
             <FunctionField label="Ảnh"
               render={
-                student => <img 
+                student => <img
                   className="cheatingImg"
                   alt="Không có ảnh"
-                  src={student.image?
-                    "data:image/jpeg;base64,"+student.image["$binary"].base64:
+                  src={(student.image && student.image["$binary"])?
+                    "data:image/jpeg;base64," + student.image["$binary"].base64:
                     null
                   } />
               } />
