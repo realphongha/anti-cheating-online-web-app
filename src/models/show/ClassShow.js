@@ -58,7 +58,11 @@ export const ClassShow = (props) => (
               render={
                 student => <img 
                   className="cheatingImg"
-                  src={"data:image/jpeg;base64,"+student.image["$binary"].base64} />
+                  alt="Không có ảnh"
+                  src={student.image?
+                    "data:image/jpeg;base64,"+student.image["$binary"].base64:
+                    null
+                  } />
               } />
           </Datagrid>
       </ArrayField>
