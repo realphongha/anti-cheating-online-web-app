@@ -50,6 +50,7 @@ const AddStudentPopup = (props) => {
     let newEmails = [...emails];
     newEmails.splice(i, 1);
     setEmails(newEmails);
+    setText(newEmails.join(","));
   }
 
   const onAddStudents = async () => {
@@ -66,7 +67,7 @@ const AddStudentPopup = (props) => {
         props.getData();
       } catch (err) {
         console.log(err);
-        if (err.response && (err.response.status === 400 || 
+        if (err.response && (err.response.status === 400 ||
                              err.response.status === 404 ||
                              err.response.status === 401)) {
           message.error(err.response.data.message, 4000);
@@ -863,7 +864,7 @@ const Exam = (props) => {
     setCheatings(newCheatings);
   }
 
-  // saving base64 image to IndexedDB 
+  // saving base64 image to IndexedDB
   const imgb64toDB = async (b64, uuid, studentId, store) => {
     await store.add({
       id: uuid,
@@ -918,7 +919,7 @@ const Exam = (props) => {
       message.info("Lưu cấu hình giám sát thành công!", 4000);
     } catch (err) {
       console.log(err);
-      if (err.response && (err.response.status === 400 || 
+      if (err.response && (err.response.status === 400 ||
                            err.response.status === 403)) {
         message.error(err.response.data.message, 4000);
         console.log(err.response.data.message);
@@ -957,7 +958,7 @@ const Exam = (props) => {
       getData();
     } catch (err) {
       console.log(err);
-      if (err.response && (err.response.status === 404 || 
+      if (err.response && (err.response.status === 404 ||
                            err.response.status === 400 ||
                            err.response.status === 401)) {
         message.error(err.response.data.message, 4000);
@@ -1074,7 +1075,7 @@ const Exam = (props) => {
                 triggerElement={
                   <input className="inputBtn" type="button" value="Thêm học sinh" />
                 } />
-              <input className="inputBtn" type="button" 
+              <input className="inputBtn" type="button"
                 value="Kiểm tra học sinh vắng"
                 onClick={() => checkRegularImages()} />
             </div>
@@ -1111,7 +1112,7 @@ const Exam = (props) => {
                   />&nbsp;&nbsp;&nbsp;&nbsp;
                   <FontAwesomeIcon className="clickable"
                     color={constants.red}
-                    icon={faXmark} 
+                    icon={faXmark}
                     onClick={() => onDeclineEndRequest(
                       noti.studentId, noti.sid, i + (notiPage - 1) * notisPerPage
                     )}
@@ -1140,7 +1141,7 @@ const Exam = (props) => {
                 color={(notiPage < Math.ceil(notis.length / notisPerPage)) ? constants.black : constants.gray} />
             </div>
             <div style={{ flex: 1, justifyContent: "flex-end" }}>
-              <input className="inputBtn" type="button" 
+              <input className="inputBtn" type="button"
                 value="Xóa tất cả thông báo"
                 onClick={() => removeAllNotis()} />
             </div>
