@@ -37,7 +37,7 @@ const ReactAdminHeader = (props) => {
           textDecoration: 'none',
           color: 'inherit'
         }}>
-          <p>Online Exam Anti-cheating</p>
+          <p>Chống gian lận thi trực tuyến</p>
         </Link>
       </div>
       <div className="avatar">
