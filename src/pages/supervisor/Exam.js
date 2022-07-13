@@ -807,9 +807,11 @@ const Exam = (props) => {
         setEnd(class_.end ? new Date(class_.end.$date) : null);
         setLast(class_.last);
         let now = new Date();
-        if (now < new Date(class_.start.$date)) {
+        let startTime = new Date(class_.start.$date);
+        let endTime = new Date(startTime.getTime() + class_.last*60000);
+        if (now < startTime) {
           setTimeStatus("not_started");
-        } else if (end) {
+        } else if (now > endTime) {
           setTimeStatus("ended");
         } else {
           setTimeStatus("in_progress");
