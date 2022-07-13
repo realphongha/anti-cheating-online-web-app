@@ -694,7 +694,7 @@ const Exam = (props) => {
       if (student && requestEndStatus.current[data.student_id] === constants.NOT_REQUESTED_STATUS) {
         setNotis((notis) => {
           let newNotis = _.cloneDeep(notis);
-          newNotis.push({
+          newNotis.unshift({
             type: "endRequest",
             name: student.name,
             studentId: data.student_id,
@@ -720,7 +720,7 @@ const Exam = (props) => {
       if (student) {
         setNotis((notis) => {
           let newNotis = _.cloneDeep(notis);
-          newNotis.push({
+          newNotis.unshift({
             type: "cheating",
             name: student.name,
             studentId: student.id,

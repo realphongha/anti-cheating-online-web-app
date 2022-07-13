@@ -43,7 +43,7 @@ const Login = () => {
   return (
     <div className="loginBox">
       <FontAwesomeIcon icon={faLock} color={constants.darkBlue} />
-      <h1>Online Exam<br /> Anti-cheating</h1>
+      <h1>Chống gian lận <br />thi cử trực tuyến</h1>
       <form className="loginForm">
         <input className="inputText" type="text"
           placeholder="Email" required
